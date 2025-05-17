@@ -15,7 +15,7 @@ export const joinWaitingList = async (req: Request, res: Response) => {
 
     if (existing) {
       res.status(200).json({
-        message: "you're already on our waiting list. Kindly check your email",
+        message: "You're already on our waiting list. Kindly check your email",
       });
       return;
     }
