@@ -3,6 +3,30 @@ import { WaitingList } from '../models/waiting-list.model';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
+export const checkList = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    let existing = await WaitingList.findOne({ email });
+
+    if (existing) {
+      res.status(200).json({
+        message: 'User is already on the waiting list.',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'User is not on the list',
+    });
+  } catch (error) {
+    console.error('Error checking waiting list:', error);
+    res.status(500).json({
+      error: 'Something went wrong. Please try again later.',
+    });
+    return;
+  }
+};
+
 export const joinWaitingList = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -34,13 +58,14 @@ export const joinWaitingList = async (req: Request, res: Response) => {
       },
     });
 
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"Compurse" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Compurse Survey Link',
-      html: `Click <a href="${surveyLink}">here</a> to complete the survey.`,
       text: `Complete the survey here: ${surveyLink}`,
     });
+
+    console.log('email send', info.messageId);
 
     const newUser = new WaitingList({ email, token });
     await newUser.save();
