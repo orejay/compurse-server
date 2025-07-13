@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { WaitingList } from '../models/waiting-list.model';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_KEY);
 
 export const checkList = async (req: Request, res: Response) => {
   try {
@@ -46,7 +49,7 @@ export const joinWaitingList = async (req: Request, res: Response) => {
 
     const token = crypto.randomBytes(32).toString('hex');
 
-    const surveyLink = `https://compurse.io/survey/${token}`;
+    // const surveyLink = `https://compurse.io/survey/${token}`;
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -58,14 +61,26 @@ export const joinWaitingList = async (req: Request, res: Response) => {
       },
     });
 
-    const info = await transporter.sendMail({
+    const { data } = await resend.emails.send({
       from: `"Compurse" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Compurse Survey Link',
-      text: `Complete the survey here: ${surveyLink}`,
+      to: [email],
+      subject: `You're In! Get Ready for Something Big 🚀`,
+      text: `"Hi,\n\nYou’re officially on the waitlist for our launch — and we couldn’t be 
+      more excited to have you.\n\nThis isn’t just any list. It means you’ll be among the first to:\n- Get 
+      early access to our new product\n- Receive behind-the-scenes updates\n- Unlock exclusive perks along the way
+       👀\n\nWe’re working hard to make sure launch day is worth the wait.\n\nKeep an eye on your inbox — more details 
+       are coming soon.\n\nThanks for joining us at the start of something amazing.\n\n– The Compurse Team`,
     });
 
-    console.log('email send', info.messageId);
+    // const info = await transporter.sendMail({
+    //   from: `"Compurse" <${process.env.EMAIL_USER}>`,
+    //   to: email,
+    //   subject: 'Compurse Survey Link',
+    //   text: `Complete the survey here:`,
+    //   // text: `Complete the survey here: ${surveyLink}`,
+    // });
+
+    console.log('resend email send', data);
 
     const newUser = new WaitingList({ email, token });
     await newUser.save();
