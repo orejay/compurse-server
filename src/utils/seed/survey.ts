@@ -28,7 +28,7 @@ export const surveySeed = [
       },
       {
         questionId: 'q3',
-        text: 'Where are you based? (City/State/Country)',
+        text: 'Where are you based? (Country/State/City)',
         type: 'location',
         required: true,
       },
