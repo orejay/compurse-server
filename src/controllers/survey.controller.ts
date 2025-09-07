@@ -3,6 +3,10 @@ import { WaitingList } from '../models/waiting-list.model';
 import { SurveyQuestion } from '../models/survey.model';
 import { surveySeed } from '../utils/seed/survey';
 import { SurveyAnswer } from '../models/survey-answer.model';
+import { Resend } from 'resend';
+import { surveyMail, waitingListMail } from '../utils/mails';
+
+const resend = new Resend(process.env.RESEND_KEY);
 
 export const getSurveyPage = async (req: Request, res: Response) => {
   const { token } = req.params;
@@ -51,6 +55,16 @@ export const submitAnswers = async (req: Request, res: Response) => {
       return;
     }
 
+    let completedSurvey = await SurveyAnswer.findOne({ userEmail });
+
+    if (completedSurvey) {
+      res
+        .status(200)
+        .json({ message: 'You have already completed the survey.' });
+
+      return;
+    }
+
     // const isSubmitted = await SurveyAnswer.findOne({
     //   userEmail,
     // });
@@ -68,6 +82,13 @@ export const submitAnswers = async (req: Request, res: Response) => {
     }));
 
     await SurveyAnswer.insertMany(formattedAnswers);
+
+    const { data } = await resend.emails.send({
+      from: `"Compurse" <${process.env.EMAIL_USER}>`,
+      to: [userEmail],
+      subject: surveyMail().subject,
+      text: surveyMail().content,
+    });
 
     res.status(201).json({ message: 'Survey answers submitted successfully' });
   } catch (err) {

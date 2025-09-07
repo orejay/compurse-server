@@ -3,6 +3,8 @@ import { WaitingList } from '../models/waiting-list.model';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import { waitingListMail } from '../utils/mails';
+import { SurveyAnswer } from '../models/survey-answer.model';
 
 const resend = new Resend(process.env.RESEND_KEY);
 
@@ -15,6 +17,7 @@ export const checkList = async (req: Request, res: Response) => {
       res.status(200).json({
         message: 'User is already on the waiting list.',
       });
+
       return;
     }
 
@@ -41,8 +44,16 @@ export const joinWaitingList = async (req: Request, res: Response) => {
     let existing = await WaitingList.findOne({ email });
 
     if (existing) {
+      let completedSurvey = await SurveyAnswer.findOne({ userEmail: email });
+      if (completedSurvey) {
+        res
+          .status(200)
+          .json({ message: 'You have already completed the survey.' });
+
+        return;
+      }
       res.status(200).json({
-        message: "You're already on our waiting list. Kindly check your email",
+        message: "You're already on our waiting list.",
       });
       return;
     }
@@ -51,37 +62,12 @@ export const joinWaitingList = async (req: Request, res: Response) => {
 
     // const surveyLink = `https://compurse.io/survey/${token}`;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
     const { data } = await resend.emails.send({
       from: `"Compurse" <${process.env.EMAIL_USER}>`,
       to: [email],
-      subject: `You're In! Get Ready for Something Big 🚀`,
-      text: `Thank you for taking the time to participate in our survey on digitizing rotating savings and credit associations (ROSCAs). Your insights are incredibly valuable as we work to build an excellent, secure and user-friendly product tailored to the needs of our communities.
-\n
-Your feedback helps us better understand how people view digital solutions for traditional savings circles like Esusu, Ajo, and Chamas. We’re excited about the future, and your input brings us one step closer to delivering a tool that truly makes a difference.
-\n
-Please stay connected with us for updates, early access, and opportunities to shape how Compurse evolves. You can follow us on social media @compurse.io  (coming soon!).
-\n
-Warm regards,
-The Compurse Team`,
+      subject: waitingListMail().subject,
+      html: waitingListMail().htmlTemplate,
     });
-
-    // const info = await transporter.sendMail({
-    //   from: `"Compurse" <${process.env.EMAIL_USER}>`,
-    //   to: email,
-    //   subject: 'Compurse Survey Link',
-    //   text: `Complete the survey here:`,
-    //   // text: `Complete the survey here: ${surveyLink}`,
-    // });
 
     const newUser = new WaitingList({ email, token });
     await newUser.save();

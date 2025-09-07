@@ -35,4 +35,4 @@ const answerSchema = new mongoose.Schema({
   },
 });
 
-export const SurveyAnswer = model('Answer', answerSchema);
+export const SurveyAnswer = model('SurveyAnswer', answerSchema);
