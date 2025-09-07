@@ -87,7 +87,7 @@ export const submitAnswers = async (req: Request, res: Response) => {
       from: `"Compurse" <${process.env.EMAIL_USER}>`,
       to: [userEmail],
       subject: surveyMail().subject,
-      text: surveyMail().content,
+      html: surveyMail().htmlTemplate,
     });
 
     res.status(201).json({ message: 'Survey answers submitted successfully' });
