@@ -64,9 +64,9 @@ export const surveyMail = () => {
                     <p style="margin:0;">Follow our journey:</p>
                   </td>
                   <td align="right">
-                    <a href="https://instagram.com/compurse.io" style="text-decoration:none; font-size:14px;">
+                    <a href="https://instagram.com/compurse_io" style="text-decoration:none; font-size:14px;">
                       <img src="https://compurse.io/logo.png" alt="Instagram" width="28" height="28" style="vertical-align:middle; margin-left:8px;" />
-                      <span style="vertical-align:middle; margin-left:8px; color:#111827;">@compurse.io</span>
+                      <span style="vertical-align:middle; margin-left:8px; color:#111827;">@compurse_io</span>
                     </a>
                   </td>
                 </tr>
