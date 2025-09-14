@@ -96,3 +96,12 @@ export const submitAnswers = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getAnswerCount = async (req: Request, res: Response) => {
+  try {
+    const distinctEmails = await SurveyAnswer.distinct('userEmail');
+    res.json({ count: distinctEmails.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to get count at the moment' });
+  }
+};
